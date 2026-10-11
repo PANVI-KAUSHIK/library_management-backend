@@ -22,7 +22,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(@jakarta.validation.Valid @RequestBody RegisterRequest request) {
         User user = authService.register(request);
         UserResponse resp = new UserResponse();
         resp.setId(user.getId());
@@ -32,6 +32,20 @@ public class AuthController {
         resp.setRollNo(user.getRollNo());
         resp.setUsername(user.getUsername());
         return ResponseEntity.ok(resp);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<java.util.Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(java.util.Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<java.util.Map<String, String>> handleValidation(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        String msg = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .orElse("Validation failed");
+        return ResponseEntity.badRequest().body(java.util.Map.of("message", msg));
     }
 
     @PostMapping("/login")

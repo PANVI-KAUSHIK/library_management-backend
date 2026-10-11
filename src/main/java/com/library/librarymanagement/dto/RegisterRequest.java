@@ -1,8 +1,10 @@
 package com.library.librarymanagement.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RegisterRequest {
     @NotBlank
     private String name;

@@ -41,8 +41,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Allow preflight OPTIONS requests for CORS
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Public authentication endpoints
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                // Public authentication and error endpoints
+                .requestMatchers("/api/auth/**", "/error").permitAll()
                 // All other API endpoints require an authenticated session
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
