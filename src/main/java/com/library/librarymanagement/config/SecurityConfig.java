@@ -85,6 +85,7 @@ public class SecurityConfig {
             }
         };
 
+        addOrigin.accept("https://library-management-black-three.vercel.app");
         addOrigin.accept(frontendUrl);
         addOrigin.accept(System.getenv("FRONTEND_URL"));
 
