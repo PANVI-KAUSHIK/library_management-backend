@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Configuration
 public class SecurityConfig {
@@ -69,20 +70,23 @@ public class SecurityConfig {
         origins.add("http://localhost:5173");
         origins.add("http://127.0.0.1:5173");
 
-        // Allow deployed frontend origin via FRONTEND_URL property or environment variable
-        if (frontendUrl != null && !frontendUrl.isBlank()) {
-            String sanitized = frontendUrl.trim().replaceAll("/+$", "");
-            if (!origins.contains(sanitized)) {
-                origins.add(sanitized);
+        // Helper to parse and sanitize origin strings (handles comma-separated and scheme-less inputs)
+        Consumer<String> addOrigin = (raw) -> {
+            if (raw == null || raw.isBlank()) return;
+            for (String part : raw.split(",")) {
+                String s = part.trim().replaceAll("/+$", "");
+                if (s.isEmpty()) continue;
+                if (!s.startsWith("http://") && !s.startsWith("https://")) {
+                    s = "https://" + s;
+                }
+                if (!origins.contains(s)) {
+                    origins.add(s);
+                }
             }
-        }
-        String envOrigin = System.getenv("FRONTEND_URL");
-        if (envOrigin != null && !envOrigin.isBlank()) {
-            String sanitized = envOrigin.trim().replaceAll("/+$", "");
-            if (!origins.contains(sanitized)) {
-                origins.add(sanitized);
-            }
-        }
+        };
+
+        addOrigin.accept(frontendUrl);
+        addOrigin.accept(System.getenv("FRONTEND_URL"));
 
         config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));

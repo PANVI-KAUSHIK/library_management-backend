@@ -12,8 +12,8 @@ import java.io.IOException;
 
 /**
  * Ensures session cookies (JSESSIONID) are configured with SameSite=None; Secure
- * when accessed over HTTPS (e.g., deployed in production across domains), while
- * allowing standard cookie behavior for local HTTP development.
+ * when accessed over HTTPS (e.g., deployed in production across domains on Vercel & Railway),
+ * while allowing standard cookie behavior for local HTTP development.
  */
 @Component
 public class SameSiteCookieFilter extends OncePerRequestFilter {
@@ -48,8 +48,11 @@ public class SameSiteCookieFilter extends OncePerRequestFilter {
             return null;
         }
 
+        String origin = request.getHeader("Origin");
         boolean isHttps = request.isSecure() ||
-                "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+                "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto")) ||
+                "https".equalsIgnoreCase(request.getHeader("x-forwarded-proto")) ||
+                (origin != null && origin.toLowerCase().startsWith("https://"));
 
         // When served over HTTPS in production across origins, append SameSite=None; Secure
         if (isHttps && cookieHeader.contains("JSESSIONID")) {
